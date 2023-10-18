@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">color_picker_app</string>
+    <string name="reset">RESET</string>
+    <string name="off">0.0</string>
+</resources>
