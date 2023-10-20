@@ -1,6 +1,7 @@
 package com.example.rest
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,7 +9,9 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.squareup.picasso.Picasso
 
 class MemeTemplatesFragment : Fragment() {
 
@@ -20,8 +23,30 @@ class MemeTemplatesFragment : Fragment() {
 
     override fun onCreate(savedInstanceState : Bundle?){
         super.onCreate(savedInstanceState)
-        this.memerViewModel = ViewModelProvider(this)[MemerViewModel::class.java]
+        this.memerViewModel = ViewModelProvider(this.requireActivity())[MemerViewModel::class.java]
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        this.memerViewModel.memeTemplatesLiveData.observe(
+            this.viewLifecycleOwner,
+            Observer {memeTemplates ->
+                Log.d(TAG, "View Model has noticed new meme templates: $memeTemplates")
+                this.updateToCurrentMemeTemplate()
+            }
+        )
+    }
+
+    private fun updateToCurrentMemeTemplate() {
+        this.memeTemplateIndexLabel.text = this.memerViewModel.getTemplateIndex().toString()
+        val meme = this.memerViewModel.getCurrentMemeTemplate()
+        if (meme != null){
+            Log.v(TAG, "Meme selected: $meme")
+            Picasso.get()
+                .load(meme.url)
+                .into(this.memeTemplateImage)
+        }
     }
 
     override fun onCreateView(
@@ -36,7 +61,18 @@ class MemeTemplatesFragment : Fragment() {
         this.nextButton = view.findViewById(R.id.button_next)
         this.memeTemplateIndexLabel = view.findViewById(R.id.template_index_label)
 
+        this.prevButton.setOnClickListener {
+            this.memerViewModel.decreaseTemplateIndex()
+            this.updateToCurrentMemeTemplate()
+        }
+
+        this.nextButton.setOnClickListener {
+            this.memerViewModel.increaseTemplateIndex()
+            this.updateToCurrentMemeTemplate()
+        }
+
         return view
     }
+    //Log.d(TAG, "")
 
 }

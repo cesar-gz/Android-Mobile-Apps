@@ -3,6 +3,7 @@ package com.example.rest
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
+const val TAG = "Main Activity"
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

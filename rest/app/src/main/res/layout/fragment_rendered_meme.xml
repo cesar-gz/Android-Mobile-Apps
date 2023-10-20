@@ -13,13 +13,13 @@
         android:ems="10"
         android:inputType="text"
         android:minHeight="48dp"
-        android:hint="Type Caption To be inserted in the image"/>
+        android:hint="Enter Caption Here"/>
 
     <Button
         android:id="@+id/caption_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Button" />
+        android:text="Make a Meme" />
 
     <ImageView
         android:id="@+id/captioned_meme"
