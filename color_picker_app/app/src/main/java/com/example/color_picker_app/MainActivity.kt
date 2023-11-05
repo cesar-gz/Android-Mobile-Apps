@@ -12,11 +12,9 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
 
-
 private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var seekBarViewModel: SeekBarViewModel
 
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private lateinit var redSwitch: Switch
@@ -36,6 +34,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var resetBtn : Button
     private lateinit var colorScreen : View
 
+    private val seekBarViewModel : SeekBarViewModel by lazy {
+        MyDataStore.initialize(this)
+        ViewModelProvider(this)[SeekBarViewModel::class.java]
+    }
+
     override fun onCreate(savedInstanceState: Bundle?){
         Log.d(TAG, "OnCreate() called.")
 
@@ -51,6 +54,10 @@ class MainActivity : AppCompatActivity() {
             seekBarViewModel.setCurrentColor(savedColor)
         }
 
+        this.seekBarViewModel.loadInputs()
+        redSeekBar.progress = seekBarViewModel.getRedProgress().toInt()
+        blueSeekBar.progress = seekBarViewModel.getBlueProgress().toInt()
+        greenSeekBar.progress = seekBarViewModel.getGreenProgress().toInt()
 
         Log.d(TAG, "OnCreate() finished.")
     }
@@ -84,8 +91,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUpCallbacks() {
         Log.d(TAG, "setUpCallbacks() called.")
-
-        seekBarViewModel = ViewModelProvider(this).get(SeekBarViewModel::class.java)
 
         redSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean){
@@ -202,6 +207,11 @@ class MainActivity : AppCompatActivity() {
         savedInstanceState.putDouble("blueProgress", this.seekBarViewModel.getBlueProgress())
         savedInstanceState.putDouble("greenProgress", this.seekBarViewModel.getGreenProgress())
         savedInstanceState.putInt("currentColor", this.seekBarViewModel.getCurrentColor())
+
+        savedInstanceState.putDouble("RedProgressBar", this.seekBarViewModel.getRedProgress())
+        savedInstanceState.putDouble("BlueProgressBar", this.seekBarViewModel.getBlueProgress())
+        savedInstanceState.putDouble("GreenProgressBar", this.seekBarViewModel.getGreenProgress())
+        Log.i(TAG, "Seek Bar Values Saved")
 
         Log.i(TAG, "onSaveInstanceState() finished")
     }

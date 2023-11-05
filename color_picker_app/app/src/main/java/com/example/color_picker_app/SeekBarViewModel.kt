@@ -1,27 +1,78 @@
 package com.example.color_picker_app
 
 import android.graphics.Color
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+
+private const val VIEW_MODEL_TAG = "My View Model"
 
 class SeekBarViewModel : ViewModel() {
-
 
     private var redProgress = 0.000
     private var blueProgress = 0.000
     private var greenProgress = 0.000
     private var currentColor: Int = Color.BLACK
 
+    private val prefs = MyDataStore.getDataStore()
+    private fun saveRedSeekBarInput(d : Double) {
+        viewModelScope.launch {
+            prefs.saveInputOfRedSB(d)
+            Log.v(VIEW_MODEL_TAG, "Done saving input #$d")
+        }
+    }
+
+    private fun saveBlueSeekBarInput(d : Double) {
+        viewModelScope.launch {
+            prefs.saveInputOfBlueSB(d)
+            Log.v(VIEW_MODEL_TAG, "Done saving input #$d")
+        }
+    }
+
+    private fun saveGreenSeekBarInput(d : Double) {
+        viewModelScope.launch {
+            prefs.saveInputOfGreenSB(d)
+            Log.v(VIEW_MODEL_TAG, "Done saving input #$d")
+        }
+    }
+
+    fun loadInputs(){
+        GlobalScope.launch {
+            prefs.redSBP.collectLatest {
+                redProgress = it
+                Log.d(VIEW_MODEL_TAG, "Loaded input $redProgress")
+            }
+        }
+        GlobalScope.launch {
+            prefs.blueSBP.collectLatest {
+                blueProgress = it
+                Log.d(VIEW_MODEL_TAG, "Loaded input $blueProgress")
+            }
+        }
+        GlobalScope.launch {
+            prefs.greenSBP.collectLatest {
+                greenProgress = it
+                Log.d(VIEW_MODEL_TAG, "Loaded input $greenProgress")
+            }
+        }
+    }
 
     fun setTextViewRedProgress(progress: Double) {
         redProgress = progress
+        saveRedSeekBarInput(progress)
     }
 
     fun setTextViewBlueProgress(progress: Double) {
         blueProgress = progress
+        saveBlueSeekBarInput(progress)
     }
 
     fun setTextViewGreenProgress(progress: Double) {
         greenProgress = progress
+        saveGreenSeekBarInput(progress)
     }
 
     fun getRedProgress() : Double{
