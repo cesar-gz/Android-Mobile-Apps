@@ -1,5 +1,6 @@
 package com.example.color_picker_app
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import android.widget.Button
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 
 private const val TAG = "MainActivity"
@@ -39,25 +41,31 @@ class MainActivity : AppCompatActivity() {
         ViewModelProvider(this)[SeekBarViewModel::class.java]
     }
 
+    private var fileStorageModel = FileStorageModel(this)
+
     override fun onCreate(savedInstanceState: Bundle?){
         Log.d(TAG, "OnCreate() called.")
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        this.seekBarViewModel.loadInputs()
         connectViews()
         setUpCallbacks()
 
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ),
+            0
+        )
+
         if (savedInstanceState != null) {
-            val savedColor = savedInstanceState.getInt("currentColor", Color.BLACK)
+            val savedColor = savedInstanceState.getInt("CombinedColor", Color.BLACK)
             colorScreen.setBackgroundColor(savedColor)
             seekBarViewModel.setCurrentColor(savedColor)
         }
-
-        this.seekBarViewModel.loadInputs()
-        redSeekBar.progress = seekBarViewModel.getRedProgress().toInt()
-        blueSeekBar.progress = seekBarViewModel.getBlueProgress().toInt()
-        greenSeekBar.progress = seekBarViewModel.getGreenProgress().toInt()
 
         Log.d(TAG, "OnCreate() finished.")
     }
@@ -67,24 +75,35 @@ class MainActivity : AppCompatActivity() {
 
         redSeekBar = findViewById(R.id.red_seek_bar)
         redSeekBar.max = 1000
-        redSeekBar.progress = 0
+        //redSeekBar.progress = 0
+        redSeekBar.progress = (fileStorageModel.loadRedTextFromFile()).toInt()
         redTextView = findViewById(R.id.red_value)
+        redTextView.text = ( (fileStorageModel.loadRedTextFromFile()).toDouble() /1000 ).toString()
         redSwitch = findViewById(R.id.red_switch)
+        if (redSeekBar.progress != 0){ redSwitch.isChecked = true }
 
         blueSeekBar = findViewById(R.id.blue_seek_bar)
         blueSeekBar.max = 1000
-        blueSeekBar.progress = 0
+        //blueSeekBar.progress = 0
+        blueSeekBar.progress = (fileStorageModel.loadBlueTextFromFile()).toInt()
         blueTextView = findViewById(R.id.blue_value)
+        blueTextView.text = ( (fileStorageModel.loadBlueTextFromFile()).toDouble() /1000 ).toString()
         blueSwitch = findViewById(R.id.blue_switch)
+        if (blueSeekBar.progress != 0){ blueSwitch.isChecked = true }
 
         greenSeekBar = findViewById(R.id.green_seek_bar)
         greenSeekBar.max = 1000
-        greenSeekBar.progress = 0
+        //greenSeekBar.progress = 0
+        greenSeekBar.progress = (fileStorageModel.loadGreenTextFromFile()).toInt()
         greenTextView = findViewById(R.id.green_value)
+        greenTextView.text = ( (fileStorageModel.loadGreenTextFromFile()).toDouble() /1000 ).toString()
         greenSwitch = findViewById(R.id.green_switch)
+        if (greenSeekBar.progress != 0){ greenSwitch.isChecked = true }
 
         resetBtn = findViewById(R.id.reset_button)
+
         colorScreen = findViewById(R.id.colorView)
+        colorScreen.setBackgroundColor(fileStorageModel.loadCombinedColorFromFile().toInt())
 
         Log.d(TAG, "connectViews() finished.")
     }
@@ -98,7 +117,9 @@ class MainActivity : AppCompatActivity() {
                     val newProgress = progress / 1000.0
                     redTextView.text = "$newProgress"
                     seekBarViewModel.setTextViewRedProgress(newProgress)
+                    fileStorageModel.saveRedTextInFile(((newProgress*1000).toInt()).toString())
                     colorScreen.setBackgroundColor(seekBarViewModel.updateColorView())
+                    fileStorageModel.saveCombinedColorFile(seekBarViewModel.getCurrentColor().toString())
                 } else{
                     redSwitch.isChecked = true
                 }
@@ -125,7 +146,9 @@ class MainActivity : AppCompatActivity() {
                     val newProgress = progress / 1000.0
                     blueTextView.text = "$newProgress"
                     seekBarViewModel.setTextViewBlueProgress(newProgress)
+                    fileStorageModel.saveBlueTextInFile(((newProgress*1000).toInt()).toString())
                     colorScreen.setBackgroundColor(seekBarViewModel.updateColorView())
+                    fileStorageModel.saveCombinedColorFile(seekBarViewModel.getCurrentColor().toString())
                 } else{
                     blueSwitch.isChecked = true
                 }
@@ -152,8 +175,9 @@ class MainActivity : AppCompatActivity() {
                     val newProgress = progress / 1000.0
                     greenTextView.text = "$newProgress"
                     seekBarViewModel.setTextViewGreenProgress(newProgress)
+                    fileStorageModel.saveGreenTextInFile(((newProgress*1000).toInt()).toString())
                     colorScreen.setBackgroundColor(seekBarViewModel.updateColorView())
-
+                    fileStorageModel.saveCombinedColorFile(seekBarViewModel.getCurrentColor().toString())
                 } else{
                     greenSwitch.isChecked = true
                 }
@@ -203,14 +227,11 @@ class MainActivity : AppCompatActivity() {
         Log.i(TAG, "onSaveInstanceState() called")
 
         super.onSaveInstanceState(savedInstanceState)
-        savedInstanceState.putDouble("redProgress", this.seekBarViewModel.getRedProgress())
-        savedInstanceState.putDouble("blueProgress", this.seekBarViewModel.getBlueProgress())
-        savedInstanceState.putDouble("greenProgress", this.seekBarViewModel.getGreenProgress())
-        savedInstanceState.putInt("currentColor", this.seekBarViewModel.getCurrentColor())
 
         savedInstanceState.putDouble("RedProgressBar", this.seekBarViewModel.getRedProgress())
         savedInstanceState.putDouble("BlueProgressBar", this.seekBarViewModel.getBlueProgress())
         savedInstanceState.putDouble("GreenProgressBar", this.seekBarViewModel.getGreenProgress())
+        savedInstanceState.putInt("CombinedColor", this.seekBarViewModel.getCurrentColor())
         Log.i(TAG, "Seek Bar Values Saved")
 
         Log.i(TAG, "onSaveInstanceState() finished")

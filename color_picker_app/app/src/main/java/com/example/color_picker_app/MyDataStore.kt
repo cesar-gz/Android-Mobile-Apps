@@ -4,11 +4,13 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 
 import android.content.Context
+import android.graphics.Color
 import android.util.Log
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -20,6 +22,7 @@ class MyDataStore private constructor(private val dataStore: DataStore<Preferenc
     private val redSeekBarProgress = doublePreferencesKey("redSBP")
     private val blueSeekBarProgress = doublePreferencesKey("blueSBP")
     private val greenSeekBarProgress = doublePreferencesKey("greenSBP")
+    private val combinedColor = intPreferencesKey("combinedScreenColor")
 
     val redSBP: Flow<Double> = this.dataStore.data.map { prefs ->
         prefs[redSeekBarProgress] ?: 0.000
@@ -33,7 +36,17 @@ class MyDataStore private constructor(private val dataStore: DataStore<Preferenc
         prefs[greenSeekBarProgress] ?: 0.000
     }
 
+    val combinedScreenColor: Flow<Int> = this.dataStore.data.map { prefs ->
+        prefs[combinedColor] ?: Color.BLACK
+    }
+
     private suspend fun saveDoubleValueOfSB(key: Preferences.Key<Double>, value: Double){
+        this.dataStore.edit { preferences ->
+            preferences[key] = value
+        }
+    }
+
+    private suspend fun saveIntValue(key: Preferences.Key<Int>, value: Int){
         this.dataStore.edit { preferences ->
             preferences[key] = value
         }
@@ -49,6 +62,10 @@ class MyDataStore private constructor(private val dataStore: DataStore<Preferenc
 
     suspend fun saveInputOfGreenSB(value: Double){
         saveDoubleValueOfSB(greenSeekBarProgress, value)
+    }
+
+    suspend fun saveInputOfCombinedColor(value: Int){
+        saveIntValue(combinedColor, value)
     }
 
     companion object{

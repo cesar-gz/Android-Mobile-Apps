@@ -21,21 +21,28 @@ class SeekBarViewModel : ViewModel() {
     private fun saveRedSeekBarInput(d : Double) {
         viewModelScope.launch {
             prefs.saveInputOfRedSB(d)
-            Log.v(VIEW_MODEL_TAG, "Done saving input #$d")
+            Log.v(VIEW_MODEL_TAG, "Done saving Red input:$d")
         }
     }
 
     private fun saveBlueSeekBarInput(d : Double) {
         viewModelScope.launch {
             prefs.saveInputOfBlueSB(d)
-            Log.v(VIEW_MODEL_TAG, "Done saving input #$d")
+            Log.v(VIEW_MODEL_TAG, "Done saving Blue input:$d")
         }
     }
 
     private fun saveGreenSeekBarInput(d : Double) {
         viewModelScope.launch {
             prefs.saveInputOfGreenSB(d)
-            Log.v(VIEW_MODEL_TAG, "Done saving input #$d")
+            Log.v(VIEW_MODEL_TAG, "Done saving Green input:$d")
+        }
+    }
+
+    private fun saveCombinedColorInput(i : Int) {
+        viewModelScope.launch {
+            prefs.saveInputOfCombinedColor(i)
+            Log.v(VIEW_MODEL_TAG, "Done saving Combined Color input:$i")
         }
     }
 
@@ -43,19 +50,25 @@ class SeekBarViewModel : ViewModel() {
         GlobalScope.launch {
             prefs.redSBP.collectLatest {
                 redProgress = it
-                Log.d(VIEW_MODEL_TAG, "Loaded input $redProgress")
+                Log.d(VIEW_MODEL_TAG, "Loaded Red input:$redProgress")
             }
         }
         GlobalScope.launch {
             prefs.blueSBP.collectLatest {
                 blueProgress = it
-                Log.d(VIEW_MODEL_TAG, "Loaded input $blueProgress")
+                Log.d(VIEW_MODEL_TAG, "Loaded Blue input:$blueProgress")
             }
         }
         GlobalScope.launch {
             prefs.greenSBP.collectLatest {
                 greenProgress = it
-                Log.d(VIEW_MODEL_TAG, "Loaded input $greenProgress")
+                Log.d(VIEW_MODEL_TAG, "Loaded Green input:$greenProgress")
+            }
+        }
+        GlobalScope.launch {
+            prefs.combinedScreenColor.collectLatest {
+                currentColor = it
+                Log.d(VIEW_MODEL_TAG, "Loaded Combined Color input:$currentColor")
             }
         }
     }
@@ -92,6 +105,7 @@ class SeekBarViewModel : ViewModel() {
         val blue = (blueProgress * 255).toInt()
         val green = (greenProgress * 255).toInt()
         currentColor = Color.rgb(red,green,blue)
+        setCurrentColor(currentColor)
         return currentColor
     }
 
@@ -101,6 +115,7 @@ class SeekBarViewModel : ViewModel() {
 
     fun setCurrentColor(savedColor : Int){
         currentColor = savedColor
+        saveCombinedColorInput(savedColor)
     }
 
 }
